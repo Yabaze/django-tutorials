@@ -5,6 +5,7 @@ from django.shortcuts import render , get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse,Http404
 
+from .forms import PostModelForm
 from .models import PostModel
 
 @login_required(login_url='/admin')
@@ -35,10 +36,28 @@ def post_model_list_view(request):
     template_path = "blog/list-view.html"
     return render(request,template_path,context)
 
+def post_model_create_view(request):
+    # if request.method == "POST" :
+    #     print(request.POST)
+    #     form = PostModelForm(request.POST or None)
+    #     if form.is_valid():
+    #         obj = form.save(commit=False)
+    #         print(form.cleaned_data)        
+
+    form = PostModelForm(request.POST or None)
+    context = {
+            'form':form
+        }
+    if form.is_valid():
+        obj = form.save(commit=False)
+        print(form.cleaned_data)       
+        
+    template_path = "blog/create-view.html"
+    return render(request,template_path,context)
 
 
-def post_model_detail_view(request):
-    obj = get_object_or_404(PostModel,id=1)
+def post_model_detail_view(request,id=None):
+    obj = get_object_or_404(PostModel)
     context = {
         "object":obj,
         #"fruits" : ["apple", "banana", "cherry"],
