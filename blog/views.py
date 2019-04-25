@@ -3,10 +3,33 @@ from django.shortcuts import render , get_object_or_404
 # Create your views here.
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse,Http404
+from django.http import HttpResponse,Http404 , HttpResponseRedirect
 
 from .forms import PostModelForm
 from .models import PostModel
+from django.contrib import messages
+
+
+def post_model_robust_view(request,id=None):
+    obj = None
+        # form = PostModelForm(request.POST or None)
+    successMessage = "Successfully New Post Created..."    
+    context = {
+            # "object":obj
+            #"fruits" : ["apple", "banana", "cherry"],
+        }
+    if id is not None:
+        obj = get_object_or_404(PostModel,id=id)
+        # form = PostModelForm(request.POST or None)
+        context = {
+            "object":obj
+            #"fruits" : ["apple", "banana", "cherry"],
+        }
+        messages.success(request, 'details displaying')
+
+        template_path = "blog/detail-view.html"
+    return render(request,template_path,context)
+
 
 @login_required(login_url='/admin')
 def post_model_list_view_with_login_required(request):
@@ -44,23 +67,63 @@ def post_model_create_view(request):
     #         obj = form.save(commit=False)
     #         print(form.cleaned_data)        
 
-    form = PostModelForm(request.POST or None)
+    form = PostModelForm(request.POST or None)        
+
     context = {
-            'form':form
+            'form':PostModelForm()
         }
     if form.is_valid():
         obj = form.save(commit=False)
-        print(form.cleaned_data)       
+        obj.save()
+        context = {
+            'form':PostModelForm()
+        }
+        messages.success(request,"View Creted Successfully")
+        #return HttpResponseRedirect("/blog/{id}".format(id=obj.id))
+        #print(form.cleaned_data)       
         
     template_path = "blog/create-view.html"
     return render(request,template_path,context)
 
-
 def post_model_detail_view(request,id=None):
-    obj = get_object_or_404(PostModel)
+    obj = get_object_or_404(PostModel,id=id)
+    # form = PostModelForm(request.POST or None)
     context = {
-        "object":obj,
+        "object":obj
         #"fruits" : ["apple", "banana", "cherry"],
     }
+    messages.success(request, 'details displaying')
+
     template_path = "blog/detail-view.html"
+    return render(request,template_path,context)
+
+def post_model_delete_view(request,id=None):
+    obj = get_object_or_404(PostModel,id=id)
+    # form = PostModelForm(request.POST or None)
+    if request.method == "POST" :
+        obj.delete()
+        messages.success(request, 'detail Deleted')
+        return HttpResponseRedirect("/blog/")
+
+    context = {
+        "object":obj
+        #"fruits" : ["apple", "banana", "cherry"],
+    }
+
+    template_path = "blog/delete-view.html"
+    return render(request,template_path,context)
+
+
+def post_model_update_view(request,id=None):
+
+    obj = get_object_or_404(PostModel,id=id)
+    form = PostModelForm(request.POST or None, instance = obj)
+
+    context = {
+        "object":obj,
+        'form':form,
+    }
+    messages.success(request, 'Updated Successfully')
+
+    template_path = "blog/update-view.html"
     return render(request,template_path,context)

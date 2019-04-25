@@ -1,0 +1,6 @@
+[client]
+database = django_sample_db
+user = mirakle
+password = loveyoujesus
+HOST = 127.0.0.1
+PORT 3306
